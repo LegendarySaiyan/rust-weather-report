@@ -10,7 +10,7 @@ use crate::apps::weather_report::framework_and_drivers::repositories::last_updat
 use crate::apps::weather_report::adapters::clients::weather_client::ABCWeatherClient;
 use crate::toolbox::utils::{is_english, is_russian};
 
-use crate::apps::weather_report::adapters::acl::dto::Rresult;
+use crate::apps::weather_report::adapters::acl::dto::{HasUpdateId, Update};
 use crate::apps::weather_report::adapters::repositories::abc_repo::ABCLastUpdateRepo;
 
 const MM: f32 = 0.75006168;
@@ -39,7 +39,7 @@ impl<'a> ABCUpdatesUsecase for UpdateUsecase<'a> {
     }
 }
 impl<'a> UpdateUsecase<'a> {
-    async fn process_message(&self, messages: Vec<Rresult>) {
+    async fn process_message(&self, messages: Vec<Update>) {
         //! Telegram returns updates in a array. If you pass the offset, it will return data starting frow the offset.
         //! We pass the update_id of the last entity, that we processed. So there is no need to work with it in the
         //! next update. So we just start iterating from the second elem.
@@ -54,7 +54,7 @@ impl<'a> UpdateUsecase<'a> {
         if let Some(message) = first_message {
             if last_update
                 .last_update_id
-                .is_some_and(|x| x == message.update_id)
+                .is_some_and(|x| x == (*message).update_id())
             {
                 if !last_update.was_used {
                     last_update.was_used = true;
@@ -64,30 +64,43 @@ impl<'a> UpdateUsecase<'a> {
         }
 
         if let Some(message) = last_message {
-            last_update.last_update_id = Some(message.update_id.clone());
+            last_update.last_update_id = Some(message.update_id().clone());
             last_update.was_used = false;
         }
 
         for message in messages_slice.iter() {
-            if message.message.text == "/command1" || message.message.text == "/start" {
-                let text = String::from("Напишите название города/write the city name");
-                self.send_message(message.message.chat.id.clone(), text)
-                    .await;
-            } else {
-                let current = self.get_current(message.message.text.clone()).await;
-
-                match current {
-                    Err(_) => {
-                        warn!("Couldn't get the info about {}", message.message.text);
-                        self.send_message(
-                            message.message.chat.id.clone(),
-                            format!("Couldn't get the info about {}", message.message.text),
-                        )
-                        .await;
-                    }
-                    Ok(info) => {
-                        self.send_message(message.message.chat.id.clone(), info)
+            match message {
+                Update::ChatMemberUpdate(..) => continue,
+                Update::MessageUpdate(message_result) => {
+                    if message_result.message.text == "/command1"
+                        || message_result.message.text == "/start"
+                    {
+                        let text = String::from("Напишите название города/write the city name");
+                        self.send_message(message_result.message.chat.id.clone(), text)
                             .await;
+                    } else {
+                        let current = self.get_current(message_result.message.text.clone()).await;
+
+                        match current {
+                            Err(_) => {
+                                warn!(
+                                    "Couldn't get the info about {}",
+                                    message_result.message.text
+                                );
+                                self.send_message(
+                                    message_result.message.chat.id.clone(),
+                                    format!(
+                                        "Couldn't get the info about {}",
+                                        message_result.message.text
+                                    ),
+                                )
+                                .await;
+                            }
+                            Ok(info) => {
+                                self.send_message(message_result.message.chat.id.clone(), info)
+                                    .await;
+                            }
+                        }
                     }
                 }
             }

@@ -12,7 +12,7 @@ pub struct TelegramClient<'a> {
 
 impl<'a> ABCTelegramClient for TelegramClient<'a> {
     async fn get_updates(&self, offset: Option<i32>) -> Result<Response, reqwest::Error> {
-        let request: RequestBuilder;
+        let mut request: RequestBuilder;
 
         if offset.is_some() {
             let params = [("offset", offset.unwrap())];
