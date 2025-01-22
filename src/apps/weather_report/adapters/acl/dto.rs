@@ -38,16 +38,17 @@ impl HasUpdateId for MessageResult {
 
 #[derive(Deserialize, Debug)]
 pub struct Message {
-    pub message_id: i32,
+    pub message_id: i64,
     pub from: From,
     pub chat: Chat,
-    pub date: i32,
+    pub date: i64,
     pub text: String,
+    pub entities: Option<Vec<Entities>>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct From {
-    pub id: i32,
+    pub id: i64,
     pub is_bot: bool,
     pub first_name: String,
     pub username: Option<String>,
@@ -58,7 +59,7 @@ pub struct From {
 
 #[derive(Deserialize, Debug)]
 pub struct Chat {
-    pub id: i32,
+    pub id: i64,
     pub first_name: String,
     pub username: Option<String>,
     #[serde(rename = "type")]
@@ -104,6 +105,14 @@ pub struct User {
     pub is_bot: bool,
     pub first_name: String,
     pub username: Option<String>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Entities {
+    pub offset: i64,
+    pub length: i64,
+    #[serde(rename = "type")]
+    pub text_type: String,
 }
 
 #[derive(Deserialize, Debug)]

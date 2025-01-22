@@ -38,7 +38,7 @@ impl<'a> ABCTelegramClient for TelegramClient<'a> {
         Ok(result)
     }
 
-    async fn send_message(&self, chat_id: i32, text: String) -> Result<bool, reqwest::Error> {
+    async fn send_message(&self, chat_id: i64, text: String) -> Result<bool, reqwest::Error> {
         let params = [("chat_id", chat_id.to_string()), ("text", text)];
 
         let request = self

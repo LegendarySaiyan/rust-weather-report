@@ -160,7 +160,7 @@ impl<'a> UpdateUsecase<'a> {
         }
         Ok(weather_string)
     }
-    async fn send_message(&self, chat_id: i32, text: String) {
+    async fn send_message(&self, chat_id: i64, text: String) {
         let result = self.telegram_client.send_message(chat_id, text).await;
         match result {
             Error => warn!("Couldn't send message"),
