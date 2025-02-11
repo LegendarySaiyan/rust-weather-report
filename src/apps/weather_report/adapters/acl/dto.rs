@@ -80,7 +80,7 @@ impl HasUpdateId for MyChatMemberResult {
 #[derive(Deserialize, Debug)]
 pub struct MyChatMember {
     pub chat: Chat,
-    pub date: i32,
+    pub date: i64,
     pub from: From,
     pub old_chat_member: OldChatMember,
     pub new_chat_member: NewChatMember,
@@ -96,7 +96,7 @@ pub struct OldChatMember {
 pub struct NewChatMember {
     pub user: User,
     pub status: String,
-    pub until_date: i32,
+    pub until_date: Option<i64>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -170,5 +170,5 @@ pub struct Current {
 pub struct Condition {
     pub text: String,
     pub icon: String,
-    pub code: i32,
+    pub code: i64,
 }
